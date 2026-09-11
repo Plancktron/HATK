@@ -5,8 +5,7 @@ import argparse, textwrap
 import pandas as pd
 import json
 
-########## < Core Global Variables > ##########
-
+### <Core Global Variables> ###
 std_MAIN_PROCESS_NAME = "\n[%s]: " % (os.path.basename(__file__))
 std_ERROR_MAIN_PROCESS_NAME = "\n[%s::ERROR]: " % (os.path.basename(__file__))
 std_WARNING_MAIN_PROCESS_NAME = "\n[%s::WARNING]: " % (os.path.basename(__file__))
@@ -16,12 +15,8 @@ HLA_names = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
 isREVERSE = {'A': False, 'C': True, 'B': True, 'DRB1': True, 'DQA1': False, 'DQB1': True, 'DPA1': True, 'DPB1': False}
 
 
-
 class HATK_HLA2HPED(object):
-
     def __init__(self, _rhped, _out, _platform):
-
-
         if not _rhped:
             print(std_ERROR_MAIN_PROCESS_NAME + "Raw hped file(s) wasn't(weren't) given. Please check '--rhped' argument again.")
             sys.exit()
@@ -30,86 +25,56 @@ class HATK_HLA2HPED(object):
             print(std_ERROR_MAIN_PROCESS_NAME + "Platform(ex. AXIOM, HIBAG, ...) infor wasn't given. Please check '--platform' argument again.")
             sys.exit()
 
-
         self.result = HLA2HPED(_rhped, _out, _platform)
-
 
     def getResult(self):
         return self.result
 
 
-
 def HLA2HPED(_rhped, _out, _platform):
-
-    ########## < Core Variables > ##########
+    ### <Core Variables> ###
 
     ### General
 
     # RETURN value
     OUTPUT_RETURN = None
 
+    ### <Argument Checking> ###
 
-
-    ########## < Argument Checking. > ##########
-
-    # Preparing intermediate paths.
+    # Preparing intermediate paths...
     _out = _out if not _out.endswith('/') else _out.rstrip('/')
     if bool(os.path.dirname(_out)): os.makedirs(os.path.dirname(_out), exist_ok=True)
 
-
-
-    ########## < Main conversion. > ##########
-
+    ### <Main conversion> ###
     if _platform == "AXIOM":
-
         # print(std_MAIN_PROCESS_NAME + "Converting output files from \"AXIOM\" to \".hped\".\n")
-
         OUTPUT_RETURN = _convert_AXIOM(_rhped, _out)
-
-
     elif _platform == "HIBAG":
-
         # print(std_MAIN_PROCESS_NAME + "Converting output files of \"HIBAG\" to \".hped\".\n")
-
         OUTPUT_RETURN = _convert_HIBAG(_rhped, _out)
-
-
     elif _platform == "xHLA":
-
         # print(std_MAIN_PROCESS_NAME + "Converting output files of \"xHLA\" to \".hped\".\n")
-
         OUTPUT_RETURN = _convert_xHLA(_rhped, _out)
-
     else:
-
-        print(std_ERROR_MAIN_PROCESS_NAME + "Wrong platform specification.({0}) Please check it again.\n".format(_platform))
+        print(std_ERROR_MAIN_PROCESS_NAME + "Wrong platform specification.({0}) Please check again.\n".format(_platform))
         sys.exit()
 
-
-
     # print("\n`OUTPUT_RETURN` is {0}\n".format(OUTPUT_RETURN))
-
-
 
     return OUTPUT_RETURN
 
 
-
-
-
 def _convert_AXIOM(_rhped, _out):
-
     if len(_rhped) != 8:
-        print(std_ERROR_MAIN_PROCESS_NAME + "Platform \"{0}\" needs 8 input files. Please check it again.\n".format("AXIOM"))
+        print(std_ERROR_MAIN_PROCESS_NAME + "Platform \"{0}\" needs 8 input files. Please check again.\n".format("AXIOM"))
         sys.exit()
-
 
     ### Exception handling 1 - When every rhped is 'NA'.
 
     f_isNA = list(map(lambda x : x == 'NA', _rhped))
 
     if all(f_isNA):
-        print(std_ERROR_MAIN_PROCESS_NAME + "No any AXIOM output file has been given. Please check the '--rhped' argument again.")
+        print(std_ERROR_MAIN_PROCESS_NAME + "No AXIOM output file was given. Please check the '--rhped' argument again.")
         sys.exit()
 
     first_appear = -1
@@ -119,10 +84,8 @@ def _convert_AXIOM(_rhped, _out):
             first_appear = i
             break
 
-
     DICT_rhped = {HLA_names[i]: pd.read_csv(_rhped[i], header=None, sep='\s+', dtype=str, names=["IID", "idx", "4digit", "p1", "p2"], usecols=['IID', 'idx', '4digit']) if not f_isNA[i] else pd.DataFrame([]) for i in range(0, len(HLA_names))}
     # print(DICT_rhped['B'])
-
 
     ### Restructuring rhped
     for i in range(len(HLA_names)):
@@ -130,24 +93,18 @@ def _convert_AXIOM(_rhped, _out):
             DICT_rhped[HLA_names[i]] = DICT_rhped[HLA_names[i]].set_index(['IID', 'idx']).unstack(['idx'])
             # print(DICT_rhped[HLA_names[i]])
 
-
     ### Exception handling 2 - When there is any rhped which has different number of rows.
     L = [DICT_rhped[HLA_names[i]].shape[0] for i in range(len(HLA_names)) if not f_isNA[i]]
     if len(set(L)) > 1:
-        print(std_ERROR_MAIN_PROCESS_NAME + "There is an HIBAG output file which has different number of rows."
+        print(std_ERROR_MAIN_PROCESS_NAME + "There is an HIBAG output file with a different number of rows."
                                             "Please check the HIBAG output files given to the '--rhped' argument.")
         sys.exit()
     else:
         L = L.pop()
 
-
-
-    ### The Main step to generate hped file.
-
+    ### The main step to generate hped file.
     l_HLA = []
-
     for i in range(len(HLA_names)):
-
         if not f_isNA[i]:
             df_temp = DICT_rhped[HLA_names[i]].reset_index(drop=True)
         else:
@@ -157,15 +114,10 @@ def _convert_AXIOM(_rhped, _out):
         # print(df_temp)
         l_HLA.append(df_temp)
 
-
     df_Right = pd.concat(l_HLA, axis=1)
     # print(df_Right)
 
-
-
-    ### Meta information(Left 6 columns)
-
-    #
+    ### Meta information (Left 6 columns)
     sr_PID = pd.Series(['0' for z in range(L)])
     sr_MID = pd.Series(['0' for z in range(L)])
     sr_Sex = pd.Series(['0' for z in range(L)])
@@ -176,20 +128,16 @@ def _convert_AXIOM(_rhped, _out):
                          sr_PID, sr_MID, sr_Sex, sr_Phe], axis=1)
     # print(df_Left)
 
-
     df_HPED_axiom = pd.concat([df_Left, df_Right], axis=1)
     # print(df_HPED_axiom)
-    df_HPED_axiom.to_csv(_out+'.hped', sep='\t', header=False, index=False)
+    df_HPED_axiom.to_csv(_out + '.hped', sep='\t', header=False, index=False)
 
-    return _out+'.hped'
-
+    return _out + '.hped'
 
 
 def _convert_HIBAG(_rhped, _out):
-
-
     if len(_rhped) != 8:
-        print(std_ERROR_MAIN_PROCESS_NAME + "Platform \"{0}\" needs 8 input files. Please check it again.\n".format("HIBAG"))
+        print(std_ERROR_MAIN_PROCESS_NAME + "Platform \"{0}\" needs 8 input files. Please check again.\n".format("HIBAG"))
         sys.exit()
 
     ### Exception handling 1 - When every rhped is 'NA'.
@@ -197,7 +145,7 @@ def _convert_HIBAG(_rhped, _out):
     f_isNA = list(map(lambda x : x == 'NA', _rhped))
 
     if all(f_isNA):
-        print(std_ERROR_MAIN_PROCESS_NAME + "No any HIBAG output file has been given. Please check the '--rhped' argument again.")
+        print(std_ERROR_MAIN_PROCESS_NAME + "No HIBAG output file was given. Please check the '--rhped' argument again.")
         sys.exit()
 
     first_appear = -1
@@ -209,40 +157,31 @@ def _convert_HIBAG(_rhped, _out):
 
     DICT_rhped = {HLA_names[i]: pd.read_csv(_rhped[i], header=None, sep='\s+', dtype=str, names=["FID", "IID", "HLA", "2digit", "4digit", "p1", "p2"]) if not f_isNA[i] else pd.DataFrame([]) for i in range(0, len(HLA_names))}
 
-
-    ### Exception handling 2 - When there is any rhped which has different number of rows.
+    ### Exception handling 2 - When there is any rhped with a different number of rows.
     L = [DICT_rhped[HLA_names[i]].shape[0] for i in range(len(HLA_names)) if not f_isNA[i]]
     if len(set(L)) > 1:
-        print(std_ERROR_MAIN_PROCESS_NAME + "There is an HIBAG output file which has different number of rows."
+        print(std_ERROR_MAIN_PROCESS_NAME + "There is an HIBAG output file with a different number of rows."
                                             "Please check the HIBAG output files given to the '--rhped' argument.")
         sys.exit()
     else:
         L = L.pop()
 
-
-    ### The Main step to generate hped file.
-
+    ### The main step to generate hped file.
     l_HLA = []  # the list to be pd.concat(..., axis=1)
-
     for i in range(len(HLA_names)):
-
         if not f_isNA[i]:
             df_temp = DICT_rhped[HLA_names[i]]['4digit'].str.extract(r'(\d{4,5}),(\d{4,5})', expand=True)
         else:
             df_temp = pd.DataFrame([['0', '0'] for z in range(L)])
 
-        df_temp.columns = [HLA_names[i]+'_1', HLA_names[i]+'_2']
+        df_temp.columns = [HLA_names[i] + '_1', HLA_names[i] + '_2']
         # print(df_temp)
         l_HLA.append(df_temp)
-
 
     df_RIGHT = pd.concat(l_HLA, axis=1)
     # print(df_RIGHT)
 
-
-
-    ### Meta information(Left 6 columns)
-
+    ### Meta information (Left 6 columns)
     sr_PID = pd.Series(['0' for z in range(L)])
     sr_MID = pd.Series(['0' for z in range(L)])
     sr_Sex = pd.Series(['0' for z in range(L)])
@@ -252,28 +191,23 @@ def _convert_HIBAG(_rhped, _out):
     # print(df_Left)
 
     df_HPED_HIBAG = pd.concat([df_Left, df_RIGHT], axis=1)
-    df_HPED_HIBAG.to_csv(_out+'.hped', sep='\t', header=False, index=False)
+    df_HPED_HIBAG.to_csv(_out + '.hped', sep='\t', header=False, index=False)
 
     return _out + '.hped'
 
 
-
 def _convert_xHLA(_i_HLA, _out):
-
-    # It Assumes that json files are more than 1.
-
+    # Assumes more than one json files exist
     DICT_json = []
-
     for i in range(0, len(_i_HLA)):
 
         with open(_i_HLA[i]) as f:
 
             DICT_json.append(json.load(f))
 
-
     """
     The output file from xHLA has 6 keys.
-    
+
     (1) "subject_id"
     (2) "creation_time"
     (3) "report_version"
@@ -286,16 +220,12 @@ def _convert_xHLA(_i_HLA, _out):
 
     l_SampleID = []
     l_HLA = []
-
     for i in range(0, len(_i_HLA)):
-
         l_SampleID.append(DICT_json[i]["subject_id"])
-
         l_temp = DICT_json[i]["hla"]["alleles"]
         l_eachRows = []
 
         for j in range(0, len(HLA_names)):
-
             l_temp2 = list(filter(lambda x : re.match(''.join(["^", HLA_names[j], "\*"]), x), l_temp))
             l_temp2 = ["0", "0"] if not bool(l_temp2) else l_temp2
             l_eachRows.extend(l_temp2)
@@ -304,7 +234,6 @@ def _convert_xHLA(_i_HLA, _out):
 
     # print(l_SampleID)
     # print(l_HLA)
-
 
     ### DataFrame
     df_RETURN = pd.DataFrame(l_HLA)
@@ -318,75 +247,60 @@ def _convert_xHLA(_i_HLA, _out):
     # (2) SampleID
     l_idx_RETURN.append(l_SampleID)
 
-    # (3), (4), (5) : P_ID, M_ID, Sex(Unknown default)
+    # (3), (4), (5) : P_ID, M_ID, Sex (Default unknown)
     idx_temp = ["0" for i in range(0, len(l_SampleID))]
     l_idx_RETURN.append(idx_temp)
     l_idx_RETURN.append(idx_temp)
     l_idx_RETURN.append(idx_temp)
 
-    # (6) Phe (Unknown default.)
+    # (6) Phe (Default unknown)
     idx_temp = ["-9" for i in range(0, len(l_SampleID))]
     l_idx_RETURN.append(idx_temp)
 
     idx_REUTURN = pd.MultiIndex.from_arrays(l_idx_RETURN)
     df_RETURN.index = idx_REUTURN
 
-
     # print("\ndf_xHLA is \n")
     # print(df_RETURN.head())
 
-
-
     ### Exporting(File Writing)
-    df_RETURN.to_csv(_out+".hped", sep='\t', header=False, index=True)
+    df_RETURN.to_csv(_out + ".hped", sep='\t', header=False, index=True)
 
-    return _out+".hped"
-
-
-
-
+    return _out + ".hped"
 
 
 def _convert_HISAT(_i_HLA, _out):
+    # WIP
 
-    # It is going to be introduced soon.
-
-    return _out+".hped"
-
-
-
-
+    return _out + ".hped"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                      description=textwrap.dedent('''\
-    #################################################################################################
+    ##################################################################################################
 
-        < HLA2HPED.py >
+    <HLA2HPED.py>
 
-         This Converts the output results from other HLA imputation software or framework to *.hped 
-        format.
+    This script converts the output results from other HLA imputation software or frameworks to *.hped 
+    format.
         
-         The number of raw input file(s) to make a hped file could be 1, 8 or More.
+    The number of raw input file(s) to make a hped file could be 1, 8 or more.
         
-         In case of 8 raw input files are given by "-rhped" argument(ex. AXIOM, HIBAG), those file 
-        must be given with the below order.
-        (8 HLA genes - "A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1").
+    In the case of 8 raw input files given by "-rhped" argument (e.g., AXIOM, HIBAG), those files must 
+    be provided according to the order below:
+    (8 HLA genes - "A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1").
         
-        
-         List of available HLA sofware is:
+        List of available HLA software:
          
-            (1) HLA*IMP(Axiom)
-            (2) HIBAG
-            (3) xHLA
-            (4) HISAT
+        (1) HLA*IMP (Axiom)
+        (2) HIBAG
+        (3) xHLA
+        (4) HISAT
         
-        Other HLA software can be added later.
-        
-        
+    Other HLA software can be added later.
 
-    #################################################################################################
+    ##################################################################################################
                                      '''),
                                      add_help=False)
 
@@ -394,17 +308,14 @@ if __name__ == "__main__":
 
     parser.add_argument("-h", "--help", help="\nShow this help message and exit\n\n", action='help')
 
-    parser.add_argument("-rhped", help="\nInput Data file(Output result(s) from other HLA related software)\n\n", nargs='*')
+    parser.add_argument("-rhped", help="\nInput data file (output result(s) from other HLA-related software)\n\n", nargs='*')
     parser.add_argument("--out", "-o", help="\nOutput file prefix\n\n", required=True)
 
-    parser.add_argument("--platform", "-p", help="\nSoftware platform.\n\n", required=True,
+    parser.add_argument("--platform", "-p", help="\nSoftware platform\n\n", required=True,
                         choices=["AXIOM", "HIBAG", "xHLA", "HISAT"])
 
 
-
-
-
-    ##### < for Test > #####
+    ##### < for Testing > #####
 
     # args = parser.parse_args(["-p", "AXIOM", "-rhped",
     #                           "NA",
@@ -436,12 +347,10 @@ if __name__ == "__main__":
     #                           "-o", "HLA2HPED_removethis_xHLA"
     #                           ])
 
-
     ##### < for Publish > #####
 
     args = parser.parse_args()
     print(args)
-
 
     # Main function execution
     HLA2HPED(args.rhped, args.out, args.platform)

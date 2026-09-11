@@ -13,16 +13,14 @@ Ultimately, HATK aims to perform an association test targeted to the HLA region.
 
 ![README_Main_Pipeline_WorkFlow](docs/img/README_Main_Pipeline_WorkFlow.png)
 
-
 <br>
 <br>
-
 
 ## (2) Installation
 
-First, Prepare OS X(Mac) or Linux operating system. HATK currently doesn't support Windows. 
+First, Prepare OS X (Mac) or Linux operating system. HATK currently doesn't support Windows. 
 
-Then, Download this project in somewhere directory of your OS X or Linux system. It will be assumed that 'git' command is already installed in your system.
+Then, download this project in somewhere directory of your OS X or Linux system. It will be assumed that 'git' command is already installed in your system.
 
 ```
 $ git clone https://github.com/WansonChoi/HATK.git
@@ -31,17 +29,15 @@ $ cd HATK
 
 <br>
 
-We strongly recommend using 'Anaconda(or Miniconda)' to set up HATK.
+We strongly recommend using 'Anaconda (or Miniconda)' to set up HATK.
 
 1. Install Anaconda or Miniconda.
 
-    - Anaconda : (https://www.anaconda.com/)
-    - Miniconda : (https://docs.conda.io/en/latest/miniconda.html)
+    - Anaconda: (https://www.anaconda.com/)
+    - Miniconda: (https://docs.conda.io/en/latest/miniconda.html)
 
 	Miniconda is a minimal version of Anaconda with fewer default packages. I recommend Miniconda if you want less storage uptake.
-
 <br>
-
 2. Create a new independent Python virtual environment for HATK with the given YML file.
 
 	By using the 'HATK_LINUX.yml' or 'HATK_OSX.yml' file in the project folder **depending on your operating system**, Create a new Python virtual environment.
@@ -71,10 +67,8 @@ We strongly recommend using 'Anaconda(or Miniconda)' to set up HATK.
 
 > (Tip) Type '_conda env remove -n HATK_' if you want to remove this newly created virtual environment for HATK forever. (https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#removing-an-environment)
 
-
 <br>
 <br>
-
 
 ## (3) Usage example
 
@@ -104,10 +98,8 @@ The Wiki includes more detailed explanation and usage examples. (You can find th
 HATK will not be responsible for misuse/mismatch of Human Genome versions. 
 (ex. Passing hg19 genotype data to the '--bfile' and '18' to the '--hg' argument.) 
 
-
 <br>
 <br>
-
 
 ## (4) Version 2.0
 In the version 2, HATK provides HLA fine-mapping to Non-Classical HLA genes(ex. _HLA-MICA/B_, _-V_, _-E_, or _-G_, etc.), too.
@@ -118,20 +110,15 @@ Also, For CookHLA users, HATKv2 provides a module to generate a custom reference
 
 For more detail, Please refer to the Wiki.
 
-
-
 <br>
 <br>
-
 
 ## (5) Citation
 HATK: HLA analysis toolkit - Wanson Choi, Yang Luo, Soumya Raychaudhuri, Buhm Han
 (https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/btaa684/5879278)
 
-
 <br>
 <br>
-
 
 ## (6) License
 
